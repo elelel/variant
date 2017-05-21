@@ -30,6 +30,10 @@
 #define MPARK_CPP14_CONSTEXPR
 #endif
 
+#if defined(__cpp_exceptions)
+#define MPARK_EXCEPTIONS
+#endif
+
 #if defined(__cpp_generic_lambdas) || defined(_MSC_VER)
 #define MPARK_GENERIC_LAMBDAS
 #endif

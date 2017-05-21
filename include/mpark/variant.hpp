@@ -196,6 +196,9 @@ namespace std {
 */
 
 #include <cstddef>
+#ifndef MPARK_EXCEPTIONS
+#include <cstdlib>
+#endif
 #include <exception>
 #include <functional>
 #include <initializer_list>
@@ -244,6 +247,14 @@ namespace mpark {
   class bad_variant_access : public std::exception {
     public:
     virtual const char *what() const noexcept { return "bad_variant_access"; }
+  };
+
+  inline void throw_bad_variant_access() {
+#ifdef MPARK_EXCEPTIONS
+    throw bad_variant_access{};
+#else
+    std::abort();
+#endif
   };
 
   template <typename... Ts>
@@ -1507,7 +1518,7 @@ namespace mpark {
     template <std::size_t I, typename V>
     inline constexpr AUTO_REFREF generic_get(V &&v)
       AUTO_REFREF_RETURN(generic_get_impl<I, V>(
-          holds_alternative<I>(v) ? 0 : throw bad_variant_access{})(
+          holds_alternative<I>(v) ? (void)0 : throw_bad_variant_access())(
           variants::lib::forward<V>(v)))
   }  // namespace detail
 
@@ -1709,7 +1720,7 @@ namespace mpark {
   inline constexpr DECLTYPE_AUTO visit(Visitor &&visitor, Vs &&... vs)
     DECLTYPE_AUTO_RETURN((detail::all(!vs.valueless_by_exception()...)
                               ? (void)0
-                              : throw bad_variant_access{}),
+                              : throw_bad_variant_access()),
                          detail::visitation::variant::visit_value(
                              variants::lib::forward<Visitor>(visitor),
                              variants::lib::forward<Vs>(vs)...))
